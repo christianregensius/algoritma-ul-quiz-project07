@@ -1,0 +1,113 @@
+---
+title: "Quiz Ul"
+author: "Christian Regensius"
+date: "25/11/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(FactoMineR)
+```
+
+```{r}
+kmeansTunning <- function(data, maxK) {
+  withinall <- NULL
+  total_k <- NULL
+  for (i in 2:maxK) {
+    set.seed(654)
+    temp <- kmeans(data,i)$tot.withinss
+    withinall <- append(withinall, temp)
+    total_k <- append(total_k,i)
+  }
+  plot(x = total_k, y = withinall, type = "o", xlab = "Number of Cluster", ylab = "Total within")
+}
+
+# kmeansTunning(your_data, maxK = 10)
+```
+
+
+```{r}
+coffee <- read.csv("coffee.csv")
+
+head(coffee)
+```
+
+```{r}
+set.seed(100)
+glimpse(coffee)
+```
+
+```{r}
+coffee_scale <- scale(coffee)
+```
+
+pca
+```{r}
+pca_coffee <- PCA(coffee_scale, scale.unit = F, graph = F)
+
+summary(pca_coffee)
+```
+
+```{r}
+plot.PCA(pca_coffee, choix = c("ind"))
+```
+
+```{r}
+plot.PCA(pca_coffee, choix = c("var"))
+```
+```{r}
+pca_coffee$eig
+```
+
+```{r}
+dimdesc(pca_coffee)
+```
+
+```{r}
+coffee_no_outlier <- coffee[-c(1082),]
+coffee_scale <- scale(coffee_no_outlier)
+
+glimpse(coffee_scale)
+```
+
+
+```{r}
+kmeansTunning(coffee_scale, 10)
+```
+
+```{r}
+set.seed(654)
+coffee_cluster <- kmeans(coffee_scale, 5)
+```
+
+```{r}
+coffee_no_outlier$clust <- as.factor(coffee_cluster$cluster)
+head(coffee_no_outlier)
+```
+
+
+```{r}
+coffee_no_outlier %>% 
+  filter(coffeeId==929)
+
+coffee_no_outlier %>% 
+  filter(clust==2, coffeeId==1021)
+```
+
+```{r}
+
+coffee_no_outlier %>% 
+  filter(coffeeId==218)
+
+
+coffee_no_outlier %>% 
+  group_by(clust) %>% 
+  summarise_all(mean)
+  
+```
+
